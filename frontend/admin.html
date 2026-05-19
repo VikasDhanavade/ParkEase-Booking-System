@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Dashboard - ParkEase</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
+        <div class="container">
+            <a class="navbar-brand parking-brand" href="#">ParkEase Admin</a>
+            <div class="d-flex align-items-center">
+                <a href="dashboard.html" class="btn btn-outline-primary btn-sm me-3"><i class="bi bi-person"></i> User View</a>
+                <span class="me-3 fw-bold" id="adminName">Admin</span>
+                <button class="btn btn-outline-danger btn-sm" onclick="logout()"><i class="bi bi-box-arrow-right"></i> Logout</button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="layout-animate">
+            <div class="col-12 mb-4">
+                <h2 class="fw-bold" id="welcomeMsgAdmin">Welcome back!</h2>
+                <p class="text-muted">Here is your live parking management overview.</p>
+            </div>
+        </div>
+        <!-- Stats -->
+        <div class="row mb-4 text-center">
+            <div class="col-md-3">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <h5 class="text-muted">Total Lots</h5>
+                        <h3 id="statLots" class="fw-bold">0</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <h5 class="text-muted">Total Slots</h5>
+                        <h3 id="statSlots" class="fw-bold">0</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <h5 class="text-muted">Active Bookings</h5>
+                        <h3 id="statActive" class="fw-bold text-success">0</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <h5 class="text-muted">Revenue</h5>
+                        <h3 class="fw-bold text-primary">₹<span id="statRev">0</span></h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <ul class="nav nav-tabs mb-4" id="adminTabs">
+            <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#citiesTab">Manage Cities</button></li>
+            <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#lotsTab">Manage
+                    Parkings</button></li>
+            <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#slotsTab">Manage
+                    Slots</button></li>
+            <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#bookingsTab">All
+                    Bookings</button></li>
+        </ul>
+
+        <div class="tab-content">
+            <!-- Cities -->
+            <div class="tab-pane fade show active" id="citiesTab">
+                <div class="card p-3 shadow-sm mb-4">
+                    <h5>Add New City</h5>
+                    <form id="cityForm" class="row border-0 g-2">
+                        <div class="col-md-5"><input type="text" id="cityName" class="form-control" placeholder="City Name" required></div>
+                        <div class="col-md-5"><input type="text" id="cityState" class="form-control" placeholder="State/Region" required></div>
+                        <div class="col-md-2"><button type="submit" class="btn btn-primary w-100">Add City</button></div>
+                    </form>
+                    <div id="cityAlert" class="alert d-none mt-2"></div>
+                </div>
+                <table class="table table-striped table-hover">
+                    <thead>
+                        <tr>
+                            <th>City Name</th>
+                            <th>State/Region</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="citiesTableBody"></tbody>
+                </table>
+            </div>
+
+            <!-- Lots -->
+            <div class="tab-pane fade" id="lotsTab">
+                <div class="card p-3 shadow-sm mb-4">
+                    <h5>Add New Parking</h5>
+                    <form id="lotForm" class="row border-0 g-2">
+                        <div class="col-md-3">
+                            <select id="lotCitySelect" class="form-select" required>
+                                <option value="">Select City</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3"><input type="text" id="lotName" class="form-control"
+                                placeholder="Parking Name" required></div>
+                        <div class="col-md-3"><input type="text" id="lotLoc" class="form-control" placeholder="Location"
+                                required></div>
+                        <div class="col-md-3">
+                            <select id="lotType" class="form-select" required>
+                                <option value="Standard">Standard</option>
+                                <option value="Premium">Premium</option>
+                                <option value="Government">Government</option>
+                                <option value="Private">Private</option>
+                                <option value="Hospital">Hospital</option>
+                                <option value="Mall">Mall</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4"><input type="number" id="lotTotal" class="form-control"
+                                placeholder="Total Slots" required></div>
+                        <div class="col-md-4"><input type="number" id="carPrice" class="form-control"
+                                placeholder="₹ Car/hr" required></div>
+                        <div class="col-md-4"><input type="number" id="bikePrice" class="form-control"
+                                placeholder="₹ Bike/hr" required></div>
+                        <div class="col-12 mt-2">
+                            <button type="submit" id="lotSubmitBtn" class="btn btn-primary w-100">Add Parking</button>
+                            <button type="button" id="lotCancelBtn" class="btn btn-outline-secondary w-100 mt-2 d-none"
+                                onclick="cancelEditLot()">Cancel Edit</button>
+                        </div>
+                    </form>
+                    <div id="lotAlert" class="alert d-none mt-2"></div>
+                </div>
+                <table class="table table-striped table-hover">
+                    <thead>
+                        <tr>
+                            <th>City</th>
+                            <th>Name</th>
+                            <th>Location</th>
+                            <th>Type</th>
+                            <th>Total Slots</th>
+                            <th>₹ Car/hr</th>
+                            <th>₹ Bike/hr</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="lotsTableBody"></tbody>
+                </table>
+            </div>
+
+            <!-- Slots -->
+            <div class="tab-pane fade" id="slotsTab">
+                <div class="card p-3 shadow-sm mb-4">
+                    <h5>Add New Slot</h5>
+                    <form id="slotForm" class="row border-0">
+                        <div class="col-md-3">
+                            <select id="slotLotSelect" class="form-select" required>
+                                <option value="">Select Parking Name</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3"><input type="text" id="slotNum" class="form-control"
+                                placeholder="Slot Number" required></div>
+                        <div class="col-md-3"><input type="text" id="slotFloor" class="form-control"
+                                placeholder="Floor"></div>
+                        <div class="col-md-3"><button type="submit" class="btn btn-primary w-100"><i class="bi bi-plus-circle"></i> Add Slot</button>
+                        </div>
+                    </form>
+                    <div id="slotAlert" class="alert d-none mt-2"></div>
+                </div>
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="mb-0">Existing Slots</h5>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-outline-secondary" onclick="returnToLots()"><i class="bi bi-arrow-left"></i> Return</button>
+                        <select id="filterSlotByLot" class="form-select w-auto" onchange="filterSlotsTable()">
+                            <option value="">All Parking Names</option>
+                        </select>
+                    </div>
+                </div>
+                <table class="table table-striped table-hover">
+                    <thead>
+                        <tr>
+                            <th>Parking Name</th>
+                            <th>Slot Number</th>
+                            <th>Floor</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="slotsTableBody"></tbody>
+                </table>
+            </div>
+
+            <!-- Bookings -->
+            <div class="tab-pane fade" id="bookingsTab">
+                <div class="card p-3 shadow-sm mb-4">
+                    <form id="filterForm" class="row">
+                        <div class="col-md-3">
+                            <select id="filterLot" class="form-select">
+                                <option value="">All Parking Names</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <input type="date" id="filterDate" class="form-control">
+                        </div>
+                        <div class="col-md-3">
+                            <button type="submit" class="btn btn-secondary w-100"><i class="bi bi-funnel"></i> Filter</button>
+                        </div>
+                        <div class="col-md-3">
+                            <button type="button" class="btn btn-outline-secondary w-100" onclick="returnToLots()"><i class="bi bi-arrow-left"></i> Return</button>
+                        </div>
+                    </form>
+                </div>
+                <table class="table table-striped table-hover table-sm">
+                    <thead>
+                        <tr>
+                            <th>User</th>
+                            <th>Lot</th>
+                            <th>Slot</th>
+                            <th>Vehicle</th>
+                            <th>From</th>
+                            <th>To</th>
+                            <th>₹</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="bookingsTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/api.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            if (!checkAuth(true)) return;
+            const user = JSON.parse(localStorage.getItem('user'));
+            document.getElementById('adminName').textContent = 'Admin';
+            document.getElementById('welcomeMsgAdmin').textContent = `Welcome back, Admin!`;
+
+            function showMsg(elId, msg, isSuccess = true) {
+                const el = document.getElementById(elId);
+                el.textContent = msg;
+                el.className = `alert alert-${isSuccess ? 'success' : 'danger'} mt-2`;
+                el.classList.remove('d-none');
+                setTimeout(() => el.classList.add('d-none'), 3000);
+            }
+
+            async function loadData() {
+                try {
+                    const stats = await apiFetch('/admin/stats');
+                    document.getElementById('statLots').textContent = stats.totalLots;
+                    document.getElementById('statSlots').textContent = stats.totalSlots;
+                    document.getElementById('statActive').textContent = stats.activeBookings;
+                    document.getElementById('statRev').textContent = stats.totalRevenue;
+
+                    const cities = await apiFetch('/cities');
+                    document.getElementById('citiesTableBody').innerHTML = '';
+                    const lotCitySelect = document.getElementById('lotCitySelect');
+                    lotCitySelect.innerHTML = '<option value="">Select City</option>';
+                    
+                    cities.forEach(city => {
+                        document.getElementById('citiesTableBody').innerHTML += `
+                            <tr>
+                                <td><span class="fw-bold">${city.name}</span></td>
+                                <td>${city.state || '-'}</td>
+                                <td>
+                                    <button class="btn btn-sm btn-outline-danger" onclick="deleteCity('${city._id}')"><i class="bi bi-trash"></i> Delete</button>
+                                </td>
+                            </tr>
+                        `;
+                        lotCitySelect.options.add(new Option(city.name, city._id));
+                    });
+
+                    const lots = await apiFetch('/lots');
+                    document.getElementById('lotsTableBody').innerHTML = '';
+                    const select = document.getElementById('slotLotSelect');
+                    const bSelect = document.getElementById('filterLot');
+                    const sFilterSelect = document.getElementById('filterSlotByLot');
+                    
+                    select.innerHTML = '<option value="">Select Parking Name</option>';
+                    bSelect.innerHTML = '<option value="">All Parking Names</option>';
+                    sFilterSelect.innerHTML = '<option value="">All Parking Names</option>';
+
+                    let cachedLots = [];
+                    lots.forEach(lot => {
+                        cachedLots.push(lot);
+                        const car = lot.carPrice || 50;
+                        const bike = lot.bikePrice || 20;
+                        document.getElementById('lotsTableBody').innerHTML += `
+                            <tr>
+                                <td>${lot.cityId ? lot.cityId.name : 'Unknown'}</td>
+                                <td><span class="fw-bold">${lot.name}</span></td>
+                                <td>${lot.location}</td>
+                                <td><span class="badge bg-info-subtle border border-info-subtle text-info-emphasis">${lot.type || 'Standard'}</span></td>
+                                <td>${lot.totalSlots}</td>
+                                <td>₹${car}</td>
+                                <td>₹${bike}</td>
+                                <td>
+                                    <button class="btn btn-sm btn-outline-info mb-1" onclick="viewLotSlots('${lot._id}')" title="View Slots"><i class="bi bi-grid-3x3-gap"></i> Slots</button>
+                                    <button class="btn btn-sm btn-outline-secondary mb-1" onclick="viewLotBookings('${lot._id}')" title="View Bookings"><i class="bi bi-journal-text"></i> Bookings</button>
+                                    <button class="btn btn-sm btn-outline-primary mb-1" onclick='editLot(${JSON.stringify(lot).replace(/'/g, "&apos;")})' title="Edit Lot"><i class="bi bi-pencil"></i> Edit</button>
+                                    <button class="btn btn-sm btn-outline-danger mb-1" onclick="deleteLot('${lot._id}')" title="Delete Lot"><i class="bi bi-trash"></i> Delete</button>
+                                </td>
+                            </tr>
+                        `;
+                        select.options.add(new Option(lot.name, lot._id));
+                        bSelect.options.add(new Option(lot.name, lot._id));
+                        sFilterSelect.options.add(new Option(lot.name, lot._id));
+                    });
+
+                    loadAllSlots();
+                    loadBookings();
+                } catch (err) {
+                    console.error(err);
+                }
+            }
+
+            async function loadAllSlots() {
+                try {
+                    const slots = await apiFetch('/admin/slots');
+                    const tbody = document.getElementById('slotsTableBody');
+                    tbody.innerHTML = '';
+                    slots.forEach(slot => {
+                        let statusBtn = '';
+                        if (slot.status === 'available') {
+                            statusBtn = `<button class="btn btn-sm btn-outline-warning me-2" onclick="toggleSlotStatus('${slot._id}', 'blocked')">Block</button>`;
+                        } else if (slot.status === 'blocked') {
+                            statusBtn = `<button class="btn btn-sm btn-outline-success me-2" onclick="toggleSlotStatus('${slot._id}', 'available')">Unblock</button>`;
+                        }
+
+                        let badgeClass = 'bg-success';
+                        if(slot.status === 'blocked') badgeClass = 'bg-secondary';
+                        else if(slot.status === 'booked') badgeClass = 'bg-danger';
+
+                        tbody.innerHTML += `
+                            <tr data-lotid="${slot.lotId ? slot.lotId._id : ''}">
+                                <td>${slot.lotId ? slot.lotId.name : 'Unknown'}</td>
+                                <td><span class="fw-bold">${slot.slotNumber}</span></td>
+                                <td>${slot.floor || '-'}</td>
+                                <td><span class="badge ${badgeClass}">${slot.status.toUpperCase()}</span></td>
+                                <td>
+                                    ${statusBtn}
+                                    <button class="btn btn-sm btn-outline-danger" onclick="deleteAdminSlot('${slot._id}')"><i class="bi bi-trash"></i> Delete</button>
+                                </td>
+                            </tr>
+                        `;
+                    });
+                } catch (err) {
+                    console.error(err);
+                }
+            }
+
+            window.toggleSlotStatus = async (id, newStatus) => {
+                if (confirm(`Are you sure you want to mark this slot as ${newStatus}?`)) {
+                    try {
+                        await apiFetch(`/admin/slots/${id}`, { 
+                            method: 'PATCH',
+                            body: JSON.stringify({ status: newStatus })
+                        });
+                        showMsg('slotAlert', `Slot ${newStatus} successfully`);
+                        loadAllSlots();
+                    } catch (err) {
+                        showMsg('slotAlert', err.message, false);
+                    }
+                }
+            };
+
+            window.filterSlotsTable = () => {
+                const lotId = document.getElementById('filterSlotByLot').value;
+                const rows = document.querySelectorAll('#slotsTableBody tr');
+                rows.forEach(row => {
+                    if(!lotId || row.getAttribute('data-lotid') === lotId) {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+            };
+
+            window.viewLotSlots = (lotId) => {
+                const triggerEl = document.querySelector('button[data-bs-target="#slotsTab"]');
+                bootstrap.Tab.getInstance(triggerEl)?.show() || new bootstrap.Tab(triggerEl).show();
+                document.getElementById('filterSlotByLot').value = lotId;
+                filterSlotsTable();
+            };
+
+            window.viewLotBookings = (lotId) => {
+                const triggerEl = document.querySelector('button[data-bs-target="#bookingsTab"]');
+                bootstrap.Tab.getInstance(triggerEl)?.show() || new bootstrap.Tab(triggerEl).show();
+                document.getElementById('filterLot').value = lotId;
+                loadBookings(lotId, document.getElementById('filterDate').value);
+            };
+
+            window.returnToLots = () => {
+                const triggerEl = document.querySelector('button[data-bs-target="#lotsTab"]');
+                bootstrap.Tab.getInstance(triggerEl)?.show() || new bootstrap.Tab(triggerEl).show();
+                
+                // Reset the filters back to default
+                document.getElementById('filterSlotByLot').value = '';
+                filterSlotsTable();
+                
+                document.getElementById('filterLot').value = '';
+                document.getElementById('filterDate').value = '';
+                loadBookings();
+            };
+
+            window.deleteAdminSlot = async (id) => {
+                if (confirm('Are you sure you want to permanently delete this slot?')) {
+                    try {
+                        await apiFetch(`/admin/slots/${id}`, { method: 'DELETE' });
+                        showMsg('slotAlert', 'Slot deleted successfully');
+                        loadAllSlots();
+                        loadData(); // To update total slot stats
+                    } catch (err) {
+                        showMsg('slotAlert', err.message, false);
+                    }
+                }
+            };
+
+            async function loadBookings(lotId = '', date = '') {
+                try {
+                    const params = new URLSearchParams();
+                    if (lotId) params.append('lotId', lotId);
+                    if (date) params.append('date', date);
+
+                    const bookings = await apiFetch(`/admin/bookings?${params.toString()}`);
+                    const tbody = document.getElementById('bookingsTableBody');
+                    tbody.innerHTML = '';
+                    bookings.forEach(b => {
+                        const st = new Date(b.startTime).toLocaleString();
+                        const et = new Date(b.endTime).toLocaleString();
+                        tbody.innerHTML += `
+                            <tr>
+                                <td>${b.userId.name} (${b.userId.email})</td>
+                                <td>${b.lotId.name}</td>
+                                <td>${b.slotId.slotNumber}</td>
+                                <td>${b.vehicleNumber}</td>
+                                <td>${st}</td>
+                                <td>${et}</td>
+                                <td>${b.amount}</td>
+                                <td>${b.status}</td>
+                            </tr>
+                        `;
+                    });
+                } catch (err) { }
+            }
+
+            let editingLotId = null;
+
+            window.editLot = (lotObj) => {
+                editingLotId = lotObj._id;
+                document.getElementById('lotCitySelect').value = lotObj.cityId ? lotObj.cityId._id : '';
+                document.getElementById('lotName').value = lotObj.name;
+                document.getElementById('lotLoc').value = lotObj.location;
+                document.getElementById('lotType').value = lotObj.type || 'Standard';
+                document.getElementById('lotTotal').value = lotObj.totalSlots;
+                document.getElementById('carPrice').value = lotObj.carPrice || 50;
+                document.getElementById('bikePrice').value = lotObj.bikePrice || 20;
+
+                document.getElementById('lotSubmitBtn').textContent = 'Update Parking';
+                document.getElementById('lotSubmitBtn').classList.replace('btn-primary', 'btn-success');
+                document.getElementById('lotCancelBtn').classList.remove('d-none');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            };
+
+            window.cancelEditLot = () => {
+                editingLotId = null;
+                document.getElementById('lotForm').reset();
+                document.getElementById('lotSubmitBtn').textContent = 'Add Parking';
+                document.getElementById('lotSubmitBtn').classList.replace('btn-success', 'btn-primary');
+                document.getElementById('lotCancelBtn').classList.add('d-none');
+            };
+
+            window.deleteLot = async (id) => {
+                if (confirm('Are you strictly sure you want to permanently delete this parking lot and ALL associated slots?')) {
+                    try {
+                        await apiFetch(`/admin/lots/${id}`, { method: 'DELETE' });
+                        showMsg('lotAlert', 'Lot deleted successfully');
+                        if (editingLotId === id) cancelEditLot();
+                        loadData();
+                    } catch (err) {
+                        showMsg('lotAlert', err.message, false);
+                    }
+                }
+            };
+
+            document.getElementById('cityForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                try {
+                    await apiFetch('/admin/cities', {
+                        method: 'POST',
+                        body: JSON.stringify({
+                            name: document.getElementById('cityName').value,
+                            state: document.getElementById('cityState').value
+                        })
+                    });
+                    showMsg('cityAlert', 'City added successfully!');
+                    e.target.reset();
+                    loadData();
+                } catch (err) { showMsg('cityAlert', err.message, false); }
+            });
+
+            window.deleteCity = async (id) => {
+                if (confirm('Are you sure you want to delete this city?')) {
+                    try {
+                        await apiFetch(`/admin/cities/${id}`, { method: 'DELETE' });
+                        showMsg('cityAlert', 'City deleted successfully');
+                        loadData();
+                    } catch (err) {
+                        showMsg('cityAlert', err.message, false);
+                    }
+                }
+            };
+
+            document.getElementById('lotForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                try {
+                    const payload = {
+                        name: document.getElementById('lotName').value,
+                        cityId: document.getElementById('lotCitySelect').value,
+                        location: document.getElementById('lotLoc').value,
+                        type: document.getElementById('lotType').value,
+                        totalSlots: document.getElementById('lotTotal').value,
+                        carPrice: document.getElementById('carPrice').value,
+                        bikePrice: document.getElementById('bikePrice').value
+                    };
+
+                    if (editingLotId) {
+                        await apiFetch(`/admin/lots/${editingLotId}`, {
+                            method: 'PATCH',
+                            body: JSON.stringify(payload)
+                        });
+                        showMsg('lotAlert', 'Lot updated successfully!');
+                        cancelEditLot();
+                    } else {
+                        await apiFetch('/admin/lots', {
+                            method: 'POST',
+                            body: JSON.stringify(payload)
+                        });
+                        showMsg('lotAlert', 'Lot added securely!');
+                        e.target.reset();
+                    }
+
+                    // Force refresh universally natively to avoid stale data displaying!
+                    loadData();
+                } catch (err) { showMsg('lotAlert', err.message, false); }
+            });
+
+            document.getElementById('slotForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                try {
+                    await apiFetch('/admin/slots', {
+                        method: 'POST',
+                        body: JSON.stringify({
+                            lotId: document.getElementById('slotLotSelect').value,
+                            slotNumber: document.getElementById('slotNum').value,
+                            floor: document.getElementById('slotFloor').value
+                        })
+                    });
+                    showMsg('slotAlert', 'Slot added');
+                    e.target.reset();
+                    loadAllSlots();
+                    loadData();
+                } catch (err) { showMsg('slotAlert', err.message, false); }
+            });
+
+            document.getElementById('filterForm').addEventListener('submit', (e) => {
+                e.preventDefault();
+                loadBookings(document.getElementById('filterLot').value, document.getElementById('filterDate').value);
+            });
+
+            loadData();
+        });
+    </script>
+</body>
+
+</html>

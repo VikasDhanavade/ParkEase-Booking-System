@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard - ParkEase</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm sticky-top">
+        <div class="container">
+            <a class="navbar-brand parking-brand d-flex align-items-center gap-2" href="#"><i class="bi bi-geo-alt-fill text-primary"></i> ParkEase</a>
+            <div class="navbar-nav me-auto">
+                <a class="nav-link active fw-medium" href="dashboard.html"><i class="bi bi-grid-1x2-fill me-1"></i>Dashboard</a>
+                <a class="nav-link fw-medium" href="bookings.html"><i class="bi bi-journal-text me-1"></i>My Bookings</a>
+            </div>
+            <div class="d-flex align-items-center gap-3">
+                <a href="admin.html" id="adminViewBtn" class="btn btn-outline-primary btn-sm rounded-pill px-3 d-none"><i class="bi bi-shield-lock me-1"></i>Admin View</a>
+                <span class="fw-medium text-dark bg-light px-3 py-1 rounded-pill" id="userName"><i class="bi bi-person-circle me-1 text-muted"></i>User</span>
+                <button class="btn btn-outline-danger btn-sm rounded-pill px-3" onclick="logout()"><i class="bi bi-box-arrow-right me-1"></i>Logout</button>
+            </div>
+        </div>
+    </nav>
+    <div class="container mt-4 mb-5">
+        <div class="row layout-animate" style="animation-delay: 0.1s;">
+            <div class="col-12 mb-4">
+                <div class="dashboard-hero">
+                    <div class="dashboard-hero-content">
+                        <h2 class="fw-bold display-6 mb-2" id="welcomeMsg" style="color: var(--primary);">Welcome back!</h2>
+                        <p class="text-muted fs-5 mb-0" id="welcomeSubtitle">Ready to securely reserve your next spot? <i class="bi bi-car-front ms-1"></i></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="globalAlert" class="alert d-none"></div>
+
+        <!-- Upcoming Parkings Overview -->
+        <div id="quickBookingsSection" class="mb-5 d-none layout-animate" style="animation-delay: 0.15s;">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="fw-bold mb-0" style="color: var(--text-main);"><i class="bi bi-clock-history text-primary me-2"></i>Upcoming Parkings</h5>
+                <a href="bookings.html" class="text-decoration-none small fw-bold">View All <i class="bi bi-arrow-right"></i></a>
+            </div>
+            <div class="row flex-nowrap overflow-auto pb-3" id="quickBookingsList" style="scroll-snap-type: x mandatory; scrollbar-width: none;">
+                <!-- Dynamically populated cards -->
+            </div>
+        </div>
+
+        <!-- Dynamic Lot Details Info Card -->
+        <div id="lotDetailsCard" class="details-card mb-4 p-4 shadow-sm d-none layout-animate" style="animation-delay: 0.2s;">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="fw-bold mb-0" style="color: var(--text-main);"><i class="bi bi-info-circle text-primary me-2"></i>Lot Information</h5>
+                <span class="text-muted"><i class="bi bi-geo-alt me-1"></i><span id="infoLocation" class="fw-medium text-dark"></span></span>
+            </div>
+            <div class="d-flex mt-2 gap-3 flex-wrap">
+                <span class="stat-badge bg-white text-dark shadow-sm border"><i class="bi bi-car-front-fill text-primary"></i> Car: ₹<span id="infoCarPrice"></span>/hr</span>
+                <span class="stat-badge bg-white text-dark shadow-sm border"><i class="bi bi-bicycle text-primary"></i> Bike: ₹<span id="infoBikePrice"></span>/hr</span>
+                <span class="stat-badge bg-success-subtle text-success border border-success-subtle"><i class="bi bi-grid-fill"></i> Total Slots: <span id="infoTotalSlots"></span></span>
+            </div>
+        </div>
+
+        <div class="search-card mb-5 shadow-lg layout-animate" style="animation-delay: 0.3s;">
+            <h5 class="fw-bold mb-4" style="color: var(--text-main);"><i class="bi bi-search text-primary me-2"></i>Find a Slot</h5>
+            <form id="searchForm" class="row g-3">
+                <div class="col-md-4 mb-2">
+                    <label class="form-label">State</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-map"></i></span>
+                        <select id="stateSelect" class="form-select" required><option value="">Select State...</option></select>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-2">
+                    <label class="form-label">City</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-building"></i></span>
+                        <select id="citySelect" class="form-select" required disabled><option value="">Select City...</option></select>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-2">
+                    <label class="form-label">Parking Location</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-geo-alt"></i></span>
+                        <select id="lotSelect" class="form-select" required disabled><option value="">Select Location...</option></select>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Check-In Date</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-calendar-event"></i></span>
+                        <input type="date" id="startDate" class="form-control" required>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Check-In Time</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-clock"></i></span>
+                        <input type="time" id="startTimeInput" class="form-control" required>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Check-Out Date</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-calendar-event"></i></span>
+                        <input type="date" id="endDate" class="form-control" required>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Check-Out Time</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-clock"></i></span>
+                        <input type="time" id="endTimeInput" class="form-control" required>
+                    </div>
+                </div>
+                <div class="col-md-12 mt-4">
+                    <button type="submit" class="btn btn-primary w-100 py-2 shadow-sm fw-bold"><i class="bi bi-search me-2"></i>Find Available Slots</button>
+                </div>
+            </form>
+        </div>
+
+        <div id="slotsSection" class="d-none mt-4 layout-animate" style="animation-delay: 0.4s;">
+            <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom border-light">
+                <h4 id="lotHeading" class="mb-0 fw-bold" style="color: var(--text-main);"><i class="bi bi-grid-3x3-gap text-primary me-2"></i>Select a Slot</h4>
+                <div id="slotsTitle" class="d-none">
+                    <span class="badge bg-success-subtle text-success fs-6 shadow-sm border border-success-subtle py-2 px-3 rounded-pill"><i class="bi bi-check-circle-fill me-1"></i> <span
+                            id="availableCount">0</span> Available Slots</span>
+                </div>
+            </div>
+            <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-5 g-4" id="slotsGrid"></div>
+        </div>
+    </div>
+
+    <!-- Booking Modal -->
+    <div class="modal fade" id="bookingModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Confirm Booking</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p><strong>Lot:</strong> <span id="modalLot"></span></p>
+                    <p><strong>Slot:</strong> <span id="modalSlot"></span> (<span id="modalFloor"></span>)</p>
+                    <p><strong>Time:</strong> <span id="modalTime"></span></p>
+                    <p><strong>Amount:</strong> ₹<span id="modalAmount">0</span></p>
+                    <div class="row mb-3">
+                        <div class="col-6">
+                            <label class="form-label">Vehicle Type</label>
+                            <select id="vehicleType" class="form-select" required>
+                                <option value="car">Car</option>
+                                <option value="bike">Bike</option>
+                            </select>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label">Vehicle Number</label>
+                            <input type="text" class="form-control" id="vehicleNumber" required>
+                        </div>
+                    </div>
+                    <div id="modalAlert" class="alert d-none mt-2"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="confirmBookingBtn">Confirm Booking</button>
+                </div>
+            </div>
+        </div>
+        </div>
+    </div>
+
+    <!-- Booking Successful Confirmation UI -->
+    <div class="modal fade" id="successModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-body text-center p-5">
+                    <h1 class="display-1 text-success mb-3"><i class="bi bi-check-circle-fill">✓</i></h1>
+                    <h3 class="fw-bold mb-2">Booking Confirmed!</h3>
+                    <p class="text-muted mb-4">Your parking slot is securely mapped.</p>
+                    
+                    <div class="bg-light p-3 rounded mb-4">
+                        <p class="mb-1 text-muted small fw-bold text-uppercase">Tracking ID</p>
+                        <p class="fw-bold fs-5 mb-0" id="successId"></p>
+                    </div>
+
+                    <div class="qr-placeholder shadow-sm mb-4 bg-white p-2 border rounded d-inline-block">
+                        <img id="successQR" src="" width="150" height="150" alt="Ticket Verification QR">
+                    </div>
+
+                    <div class="d-flex flex-column gap-2">
+                        <a href="#" id="successViewBtn" class="btn btn-primary w-100 fw-bold">View Ticket Receipt</a>
+                        <button type="button" class="btn btn-outline-secondary w-100 fw-bold" onclick="window.location.reload()">Close & Return</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/api.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            if (!checkAuth()) return;
+            const user = getUser();
+            document.getElementById('userName').textContent = user.name;
+            document.getElementById('welcomeMsg').textContent = `Welcome back, ${user.name}!`;
+
+            if (user.role === 'admin') {
+                document.getElementById('adminViewBtn').classList.remove('d-none');
+                document.getElementById('welcomeSubtitle').classList.add('d-none');
+            }
+
+            const lotSelect = document.getElementById('lotSelect');
+            const searchForm = document.getElementById('searchForm');
+            const slotsSection = document.getElementById('slotsSection');
+            const slotsGrid = document.getElementById('slotsGrid');
+            const globalAlert = document.getElementById('globalAlert');
+            const lotHeading = document.getElementById('lotHeading');
+
+            const modal = new bootstrap.Modal(document.getElementById('bookingModal'));
+            let currentSlot = null;
+            let currentAmount = 0;
+
+            function showAlert(msg, isSuccess = false) {
+                globalAlert.textContent = msg;
+                globalAlert.className = `alert alert-${isSuccess ? 'success' : 'danger'}`;
+                globalAlert.classList.remove('d-none');
+            }
+
+            // Quick upcoming bookings on dashboard
+            async function loadQuickBookings() {
+                try {
+                    const bookings = await apiFetch('/bookings/me');
+                    const quickList = document.getElementById('quickBookingsList');
+                    const quickSection = document.getElementById('quickBookingsSection');
+                    const now = new Date();
+                    
+                    // Filter for active/upcoming bookings
+                    const activeBookings = bookings.filter(b => {
+                        const st = new Date(b.startTime);
+                        const et = new Date(b.endTime);
+                        return b.status === 'active' && (st > now || et >= now);
+                    });
+
+                    if (activeBookings.length === 0) {
+                        quickSection.classList.add('d-none');
+                        return;
+                    }
+
+                    quickList.innerHTML = '';
+                    activeBookings.slice(0, 4).forEach(b => {
+                        const st = new Date(b.startTime);
+                        
+                        const html = `
+                            <div class="col-11 col-md-5 col-lg-4" style="scroll-snap-align: start;">
+                                <div class="card shadow-sm border-0 h-100" style="background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%); border-left: 4px solid var(--secondary) !important; border-radius: 12px;">
+                                    <div class="card-body p-3">
+                                        <div class="d-flex justify-content-between align-items-start mb-2">
+                                            <h6 class="fw-bold mb-0 text-primary text-truncate pe-2">${b.lotId.name}</h6>
+                                            <span class="badge bg-success-subtle text-success border border-success-subtle" style="font-size: 0.65rem;">ACTIVE</span>
+                                        </div>
+                                        <p class="mb-1 small text-muted text-truncate"><i class="bi bi-geo-alt me-1"></i>${b.lotId.location}</p>
+                                        <div class="d-flex gap-2 mb-2 mt-3">
+                                            <div class="bg-light rounded p-2 text-center flex-fill">
+                                                <small class="d-block text-muted" style="font-size: 0.65rem;">SLOT</small>
+                                                <span class="fw-bold">${b.slotId.slotNumber}</span>
+                                            </div>
+                                            <div class="bg-light rounded p-2 text-center flex-fill">
+                                                <small class="d-block text-muted" style="font-size: 0.65rem;">VEHICLE</small>
+                                                <span class="fw-bold" style="font-size: 0.85rem;">${b.vehicleNumber}</span>
+                                            </div>
+                                        </div>
+                                        <div class="text-center mt-3 pt-2 border-top">
+                                            <small class="fw-bold text-dark"><i class="bi bi-calendar-event me-1"></i>${st.toLocaleString('en-US', {month:'short', day:'numeric', hour:'numeric', minute:'2-digit'})}</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                        quickList.innerHTML += html;
+                    });
+                    
+                    quickSection.classList.remove('d-none');
+                } catch (err) {
+                    console.error("Failed to load quick bookings", err);
+                }
+            }
+
+            loadQuickBookings();
+
+            const stateSelect = document.getElementById('stateSelect');
+            const citySelect = document.getElementById('citySelect');
+            let allCitiesData = [];
+            let allLotsData = [];
+
+            try {
+                allCitiesData = await apiFetch('/cities');
+                const states = [...new Set(allCitiesData.map(c => c.state).filter(Boolean))].sort();
+                states.forEach(state => {
+                    const opt = document.createElement('option');
+                    opt.value = state;
+                    opt.textContent = state;
+                    stateSelect.appendChild(opt);
+                });
+            } catch (err) {
+                console.error("Failed to load states", err);
+            }
+
+            stateSelect.addEventListener('change', (e) => {
+                const state = e.target.value;
+                citySelect.innerHTML = '<option value="">Select City...</option>';
+                lotSelect.innerHTML = '<option value="">Select Location...</option>';
+                citySelect.disabled = true;
+                lotSelect.disabled = true;
+                document.getElementById('lotDetailsCard').classList.add('d-none');
+                
+                if (!state) return;
+
+                const filteredCities = allCitiesData.filter(c => c.state === state);
+                if (filteredCities.length === 0) {
+                    showAlert('No cities available in this state yet.');
+                    return;
+                }
+
+                filteredCities.forEach(c => {
+                    const opt = document.createElement('option');
+                    opt.value = c._id;
+                    opt.textContent = c.name;
+                    citySelect.appendChild(opt);
+                });
+                
+                citySelect.disabled = false;
+                citySelect.classList.remove('select-enabled-anim');
+                void citySelect.offsetWidth;
+                citySelect.classList.add('select-enabled-anim');
+                globalAlert.classList.add('d-none');
+            });
+
+            citySelect.addEventListener('change', async (e) => {
+                const cityId = e.target.value;
+                lotSelect.innerHTML = '<option value="">Select Location...</option>';
+                lotSelect.disabled = true;
+                const detailsCard = document.getElementById('lotDetailsCard');
+                detailsCard.classList.add('d-none');
+                
+                if (!cityId) return;
+
+                try {
+                    const lots = await apiFetch(`/lots?cityId=${cityId}`);
+                    allLotsData = lots;
+
+                    if (lots.length === 0) {
+                        showAlert('No parking locations available in this city yet.');
+                        return;
+                    }
+
+                    lots.forEach(lot => {
+                        const opt = document.createElement('option');
+                        opt.value = lot._id;
+                        opt.textContent = `${lot.name} - ${lot.location}`;
+                        opt.dataset.name = lot.name;
+                        opt.dataset.car = lot.carPrice || 50;
+                        opt.dataset.bike = lot.bikePrice || 20;
+                        lotSelect.appendChild(opt);
+                    });
+                    
+                    lotSelect.disabled = false;
+                    
+                    // Trigger animation
+                    lotSelect.classList.remove('select-enabled-anim');
+                    void lotSelect.offsetWidth; // Trigger reflow
+                    lotSelect.classList.add('select-enabled-anim');
+
+                    globalAlert.classList.add('d-none');
+                } catch(err) {
+                    showAlert('Error loading parkings.');
+                }
+            });
+
+            lotSelect.addEventListener('change', (e) => {
+                const lotId = e.target.value;
+                const detailsCard = document.getElementById('lotDetailsCard');
+
+                if (!lotId) {
+                    detailsCard.classList.add('d-none');
+                    return;
+                }
+
+                const lot = allLotsData.find(l => l._id === lotId);
+                if (lot) {
+                    document.getElementById('infoLocation').textContent = lot.location;
+                    document.getElementById('infoCarPrice').textContent = lot.carPrice || 50;
+                    document.getElementById('infoBikePrice').textContent = lot.bikePrice || 20;
+                    document.getElementById('infoTotalSlots').textContent = lot.totalSlots;
+                    detailsCard.classList.remove('d-none');
+
+                    // Auto-Trigger the search seamlessly so users see slots instantly
+                    searchForm.dispatchEvent(new Event('submit'));
+                }
+            });
+
+            // Set default dates dynamically to ensure automated searches don't crash
+            const now = new Date();
+            const tomorrow = new Date();
+            tomorrow.setHours(now.getHours() + 2);
+
+            const formatDate = (date) => {
+                const d = new Date(date);
+                return new Date(d.getTime() - (d.getTimezoneOffset() * 60000)).toISOString().slice(0, 10);
+            };
+
+            const formatTime = (date) => {
+                const d = new Date(date);
+                return new Date(d.getTime() - (d.getTimezoneOffset() * 60000)).toISOString().slice(11, 16);
+            };
+
+            document.getElementById('startDate').value = formatDate(now);
+            document.getElementById('startTimeInput').value = formatTime(now);
+
+            document.getElementById('endDate').value = formatDate(tomorrow);
+            document.getElementById('endTimeInput').value = formatTime(tomorrow);
+
+            searchForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const lotId = lotSelect.value;
+                const startDate = document.getElementById('startDate').value;
+                const startTimeInput = document.getElementById('startTimeInput').value;
+                const endDate = document.getElementById('endDate').value;
+                const endTimeInput = document.getElementById('endTimeInput').value;
+
+                const startTime = `${startDate}T${startTimeInput}`;
+                const endTime = `${endDate}T${endTimeInput}`;
+                globalAlert.classList.add('d-none');
+
+                try {
+                    const slots = await apiFetch(`/lots/${lotId}/slots?startTime=${startTime}&endTime=${endTime}`);
+                    slotsGrid.innerHTML = '';
+                    const lotName = lotSelect.options[lotSelect.selectedIndex].text;
+                    lotHeading.textContent = `${lotName} Booking Spaces`;
+
+                    let availableNum = slots.filter(s => s.availabilityStatus === 'available').length;
+                    document.getElementById('availableCount').textContent = availableNum;
+                    document.getElementById('slotsTitle').classList.remove('d-none');
+
+                    slots.forEach(slot => {
+                        const col = document.createElement('div');
+                        col.className = 'col';
+
+                        let cardClass = 'slot-card';
+                        if (slot.availabilityStatus === 'available') cardClass += ' slot-available';
+                        else if (slot.availabilityStatus === 'booked') cardClass += ' slot-booked';
+                        else cardClass += ' slot-blocked';
+
+                        let icon = '<i class="bi bi-p-circle text-muted fs-4 mb-2"></i>';
+                        if (slot.availabilityStatus === 'available') icon = '<i class="bi bi-car-front-fill text-success fs-4 mb-2"></i>';
+                        else if (slot.availabilityStatus === 'booked') icon = '<i class="bi bi-car-front-fill text-danger fs-4 mb-2"></i>';
+                        else icon = '<i class="bi bi-slash-circle text-secondary fs-4 mb-2"></i>';
+
+                        col.innerHTML = `
+                            <div class="card ${cardClass} h-100 d-flex flex-column align-items-center justify-content-center py-3" title="Status: ${slot.availabilityStatus}">
+                                ${icon}
+                                <h5 class="mb-0 fw-bold">${slot.slotNumber}</h5>
+                                <small class="text-muted"><i class="bi bi-layers me-1"></i>${slot.floor || 'N/A'}</small>
+                                <div class="mt-2 fw-bold text-uppercase badge ${slot.availabilityStatus === 'available' ? 'bg-success-subtle text-success border border-success-subtle' : (slot.availabilityStatus === 'booked' ? 'bg-danger-subtle text-danger border border-danger-subtle' : 'bg-secondary-subtle text-secondary border border-secondary-subtle')}" style="font-size: 0.7rem; letter-spacing: 0.5px;">${slot.availabilityStatus}</div>
+                            </div>
+                        `;
+
+                        if (slot.availabilityStatus === 'available') {
+                            col.querySelector('.slot-card').addEventListener('click', () => {
+                                currentSlot = slot;
+
+                                const st = new Date(startTime);
+                                const et = new Date(endTime);
+                                const totalHours = Math.ceil(Math.abs(et - st) / 36e5);
+
+                                if (totalHours < 1) {
+                                    showAlert("Minimum booking duration is 1 hour");
+                                    return;
+                                }
+
+                                const updateAmount = () => {
+                                    const vType = document.getElementById('vehicleType').value;
+                                    const activeLotOpt = lotSelect.options[lotSelect.selectedIndex];
+                                    const targetPrice = vType === 'bike' ? Number(activeLotOpt.dataset.bike) : Number(activeLotOpt.dataset.car);
+
+                                    // Make sure text actively shows selected dynamic price
+                                    document.getElementById('vehicleType').options[0].textContent = `Car (₹${activeLotOpt.dataset.car}/hr)`;
+                                    document.getElementById('vehicleType').options[1].textContent = `Bike (₹${activeLotOpt.dataset.bike}/hr)`;
+
+                                    currentAmount = totalHours * targetPrice;
+                                    document.getElementById('modalAmount').textContent = currentAmount;
+                                };
+
+                                document.getElementById('modalLot').textContent = lotName;
+                                document.getElementById('modalSlot').textContent = slot.slotNumber;
+                                document.getElementById('modalFloor').textContent = slot.floor || 'N/A';
+                                document.getElementById('modalTime').textContent = `${st.toLocaleString()} to ${et.toLocaleString()}`;
+                                document.getElementById('vehicleType').onchange = updateAmount;
+                                document.getElementById('vehicleType').value = 'car';
+                                document.getElementById('vehicleNumber').value = '';
+                                updateAmount();
+
+                                document.getElementById('modalAlert').classList.add('d-none');
+                                modal.show();
+                            });
+                        }
+                        slotsGrid.appendChild(col);
+                    });
+                    slotsSection.classList.remove('d-none');
+                } catch (err) {
+                    showAlert(err.message);
+                }
+            });
+
+            document.getElementById('confirmBookingBtn').addEventListener('click', async () => {
+                const vehicle = document.getElementById('vehicleNumber').value;
+                const mAlert = document.getElementById('modalAlert');
+
+                if (!vehicle) {
+                    mAlert.textContent = "Vehicle number required";
+                    mAlert.className = 'alert alert-danger';
+                    mAlert.classList.remove('d-none');
+                    return;
+                }
+
+                try {
+                    const startDate = document.getElementById('startDate').value;
+                    const startTimeInput = document.getElementById('startTimeInput').value;
+                    const endDate = document.getElementById('endDate').value;
+                    const endTimeInput = document.getElementById('endTimeInput').value;
+
+                    const payload = {
+                        lotId: lotSelect.value,
+                        slotId: currentSlot._id,
+                        startTime: `${startDate}T${startTimeInput}`,
+                        endTime: `${endDate}T${endTimeInput}`,
+                        vehicleNumber: vehicle,
+                        vehicleType: document.getElementById('vehicleType').value
+                    };
+                    const res = await apiFetch('/bookings', {
+                        method: 'POST',
+                        body: JSON.stringify(payload)
+                    });
+
+                    modal.hide();
+                    
+                    // Trigger the Success Native Layout dynamically
+                    let targetUrl = res.qrCodeData;
+                    if (targetUrl) {
+                        targetUrl = targetUrl.replace('localhost', window.location.hostname);
+                    }
+                    
+                    const succModal = new bootstrap.Modal(document.getElementById('successModal'));
+                    document.getElementById('successId').textContent = res._id;
+                    document.getElementById('successQR').src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(targetUrl)}`;
+                    document.getElementById('successViewBtn').href = `ticket.html?id=${res._id}`;
+                    succModal.show();
+
+                    loadQuickBookings();
+                    searchForm.dispatchEvent(new Event('submit'));
+                } catch (err) {
+                    mAlert.textContent = err.message;
+                    mAlert.className = 'alert alert-danger';
+                    mAlert.classList.remove('d-none');
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>

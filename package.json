@@ -1,0 +1,10 @@
+{
+  "name": "parking-system",
+  "version": "1.0.0",
+  "scripts": {
+    "start": "cd backend && npm start",
+    "dev": "cd backend && npm run dev",
+    "install": "cd backend && npm install",
+    "serve": "cd frontend && npx serve -p 3000"
+  }
+}
