@@ -30,11 +30,11 @@ export const createBooking = async (req, res) => {
 
         const slot = await Slot.findById(slotId);
         if (!slot) {
-             return res.status(404).json({ message: 'Slot not found' });
+            return res.status(404).json({ message: 'Slot not found' });
         }
 
         if (slot.lotId.toString() !== lotId) {
-             return res.status(400).json({ message: 'Slot does not belong to the specified parking lot' });
+            return res.status(400).json({ message: 'Slot does not belong to the specified parking lot' });
         }
 
         if (slot.status === 'blocked') {
@@ -53,12 +53,12 @@ export const createBooking = async (req, res) => {
         }
 
         const hoursDiff = Math.abs(end - start) / 36e5;
-        
+
         if (hoursDiff < 1) {
             return res.status(400).json({ message: 'Minimum booking duration is 1 hour' });
         }
 
-        const lot = await ParkingLot.findById(lotId);
+        const lot = await ParkingLot.findById(lotId).populate('cityId');
         const totalHours = Math.ceil(hoursDiff);
         const ratePerHour = vehicleType === 'bike' ? (lot.bikePrice || 20) : (lot.carPrice || 50);
         const amount = totalHours * ratePerHour;
@@ -87,7 +87,7 @@ export const createBooking = async (req, res) => {
 
         // Ensure user obj is populated for the QR Code Data 
         const user = await User.findById(req.user.id);
-        const qrContent = `http://${secureLocalIp}:3000/ticket.html?id=${newBooking._id}`;
+        const qrContent = `http://${secureLocalIp}:3000/ticket?id=${newBooking._id}`;
         newBooking.qrCodeData = qrContent;
 
         const savedBooking = await newBooking.save();
@@ -95,6 +95,10 @@ export const createBooking = async (req, res) => {
         // Send confirmation email internally gracefully natively seamlessly
         if (user && lot) {
             const duration = Math.ceil(Math.abs(end - start) / 36e5);
+            const cityName = lot.cityId ? lot.cityId.name : 'Unknown City';
+            const stateName = lot.cityId ? lot.cityId.state : 'Unknown State';
+            const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(qrContent)}`;
+
             const htmlTemplate = `
                 <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #ddd; border-radius: 10px;">
                     <h2 style="color: #0d6efd; text-align: center;">ParkEase Confirmation</h2>
@@ -106,6 +110,7 @@ export const createBooking = async (req, res) => {
                         <table style="width: 100%; border-collapse: collapse;">
                             <tr><td style="padding: 8px 0; border-bottom: 1px solid #eee;"><strong>Booking ID:</strong></td><td style="padding: 8px 0; border-bottom: 1px solid #eee;">${newBooking._id}</td></tr>
                             <tr><td style="padding: 8px 0; border-bottom: 1px solid #eee;"><strong>Parking Lot:</strong></td><td style="padding: 8px 0; border-bottom: 1px solid #eee;">${lot.name} (${lot.location})</td></tr>
+                            <tr><td style="padding: 8px 0; border-bottom: 1px solid #eee;"><strong>City & State:</strong></td><td style="padding: 8px 0; border-bottom: 1px solid #eee;">${cityName}, ${stateName}</td></tr>
                             <tr><td style="padding: 8px 0; border-bottom: 1px solid #eee;"><strong>Slot Number:</strong></td><td style="padding: 8px 0; border-bottom: 1px solid #eee;">${slot.slotNumber}</td></tr>
                             <tr><td style="padding: 8px 0; border-bottom: 1px solid #eee;"><strong>Vehicle:</strong></td><td style="padding: 8px 0; border-bottom: 1px solid #eee;">${vehicleNumber}</td></tr>
                             <tr><td style="padding: 8px 0; border-bottom: 1px solid #eee;"><strong>Start Time:</strong></td><td style="padding: 8px 0; border-bottom: 1px solid #eee;">${start.toLocaleString()}</td></tr>
@@ -117,6 +122,11 @@ export const createBooking = async (req, res) => {
                         <div style="text-align: center; margin-top: 20px;">
                             <span style="background-color: #198754; color: white; padding: 10px 20px; border-radius: 5px; font-weight: bold;">Status: Confirmed ✔️</span>
                         </div>
+
+                        <div style="text-align: center; margin-top: 20px;">
+                            <p style="font-size: 14px; color: #555; margin-bottom: 10px;">Scan this QR code to view your digital ticket</p>
+                            <img src="${qrImageUrl}" alt="Ticket QR Code" style="border: 1px solid #ddd; padding: 5px; border-radius: 10px; background-color: white;" />
+                        </div>
                     </div>
                     
                     <p style="margin-top: 20px; font-size: 14px; color: #555;">Thank you for choosing ParkEase.</p>
@@ -127,7 +137,7 @@ export const createBooking = async (req, res) => {
             await sendEmail({
                 to: user.email,
                 subject: 'ParkEase - Parking Booking Confirmed',
-                text: `Hello ${user.name},\n\nYour parking slot has been booked successfully with ParkEase.\n\nBooking Details:\n\nBooking ID: ${newBooking._id}\nParking Lot: ${lot.name}\nSlot Number: ${slot.slotNumber}\nVehicle Number: ${vehicleNumber}\nDate: ${start.toLocaleDateString()}\nStart Time: ${start.toLocaleTimeString()}\nEnd Time: ${end.toLocaleTimeString()}\nDuration: ${duration} Hour(s)\nAmount: ₹${amount}\nStatus: Confirmed\n\nThank you for choosing ParkEase.\n\nRegards,\nParkEase Team`,
+                text: `Hello ${user.name},\n\nYour parking slot has been booked successfully with ParkEase.\n\nBooking Details:\n\nBooking ID: ${newBooking._id}\nParking Lot: ${lot.name} (${lot.location})\nCity & State: ${cityName}, ${stateName}\nSlot Number: ${slot.slotNumber}\nVehicle Number: ${vehicleNumber}\nDate: ${start.toLocaleDateString()}\nStart Time: ${start.toLocaleTimeString()}\nEnd Time: ${end.toLocaleTimeString()}\nDuration: ${duration} Hour(s)\nAmount: ₹${amount}\nStatus: Confirmed\n\nThank you for choosing ParkEase.\n\nRegards,\nParkEase Team`,
                 html: htmlTemplate
             });
         }
@@ -146,7 +156,7 @@ export const getMyBookings = async (req, res) => {
             .sort({ createdAt: -1 })
             .populate('slotId', 'slotNumber floor')
             .populate('lotId', 'name location');
-        
+
         res.json(bookings);
     } catch (error) {
         console.error(error);
@@ -157,7 +167,7 @@ export const getMyBookings = async (req, res) => {
 export const cancelBooking = async (req, res) => {
     try {
         const bookingId = req.params.id;
-        
+
         const booking = await Booking.findOne({ _id: bookingId, userId: req.user.id });
         if (!booking) {
             return res.status(404).json({ message: 'Booking not found' });
@@ -190,7 +200,7 @@ export const cancelBooking = async (req, res) => {
 export const checkoutBooking = async (req, res) => {
     try {
         const bookingId = req.params.id;
-        
+
         const booking = await Booking.findOne({ _id: bookingId, userId: req.user.id }).populate('lotId');
         if (!booking) {
             return res.status(404).json({ message: 'Booking not found' });
@@ -201,14 +211,14 @@ export const checkoutBooking = async (req, res) => {
         }
 
         const now = new Date();
-        
+
         // Overstay penalty logic
         if (now > booking.endTime) {
             const extraHours = Math.ceil(Math.abs(now - booking.endTime) / 36e5);
             const ratePerHour = booking.vehicleType === 'bike' ? (booking.lotId.bikePrice || 20) : (booking.lotId.carPrice || 50);
-            
+
             // Double hourly charges penalty
-            const penalty = extraHours * (ratePerHour * 2); 
+            const penalty = extraHours * (ratePerHour * 2);
             booking.amount += penalty;
             booking.penaltyAmount = penalty;
         }
@@ -230,13 +240,16 @@ export const getBookingById = async (req, res) => {
             .populate('userId', 'name email')
             .populate('lotId', 'name location')
             .populate('slotId', 'slotNumber floor');
-            
+
         if (!booking) {
             return res.status(404).json({ message: 'Booking essentially missing or invalid' });
         }
         res.json(booking);
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Server error or severely invalid URL pattern lookup' });
+        if (error.name === 'CastError') {
+            return res.status(400).json({ message: `Invalid Ticket ID Format: ${req.params.id}` });
+        }
+        console.error("verifyBooking Error:", error);
+        res.status(500).json({ message: 'Server error during verification' });
     }
 };

@@ -168,8 +168,9 @@ export const updateSlotStatus = async (req, res) => {
     try {
         const { status } = req.body;
         
-        if (!status || !['available', 'blocked'].includes(status)) {
-            return res.status(400).json({ message: 'Status must be available or blocked' });
+        const allowedStatuses = ['available', 'booked', 'occupied', 'blocked', 'maintenance'];
+        if (!status || !allowedStatuses.includes(status)) {
+            return res.status(400).json({ message: 'Invalid status' });
         }
 
         const slot = await Slot.findById(req.params.id);
@@ -246,6 +247,11 @@ export const getStats = async (req, res) => {
     try {
         const totalBookings = await Booking.countDocuments();
         const activeBookings = await Booking.countDocuments({ status: 'active' });
+        
+        const startOfDay = new Date();
+        startOfDay.setHours(0, 0, 0, 0);
+        const dailyBookings = await Booking.countDocuments({ createdAt: { $gte: startOfDay } });
+
         const totalLots = await ParkingLot.countDocuments();
         const totalSlots = await Slot.countDocuments();
 
@@ -255,6 +261,7 @@ export const getStats = async (req, res) => {
         res.json({
             totalBookings,
             activeBookings,
+            dailyBookings,
             totalRevenue,
             totalLots,
             totalSlots

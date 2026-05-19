@@ -72,8 +72,8 @@ export const getLotSlots = async (req, res) => {
 
         const slotsWithStatus = slots.map(slot => {
             const slotObj = slot.toObject();
-            if (slot.status === 'blocked') {
-                slotObj.availabilityStatus = 'blocked';
+            if (slot.status !== 'available') {
+                slotObj.availabilityStatus = slot.status;
             } else if (bookedSlotIds.has(slot._id.toString())) {
                 slotObj.availabilityStatus = 'booked';
             } else {

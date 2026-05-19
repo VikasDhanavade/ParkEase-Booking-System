@@ -29,36 +29,69 @@
             </div>
         </div>
         <!-- Stats -->
-        <div class="row mb-4 text-center">
-            <div class="col-md-3">
-                <div class="card shadow-sm">
-                    <div class="card-body">
-                        <h5 class="text-muted">Total Lots</h5>
-                        <h3 id="statLots" class="fw-bold">0</h3>
+        <div class="row row-cols-1 row-cols-md-2 row-cols-xl-5 g-4 mb-4">
+            <div class="col">
+                <div class="card stat-card shadow-sm border-0 h-100" style="border-radius: 16px;">
+                    <div class="card-body p-4 d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted text-uppercase mb-1" style="font-size: 0.75rem; letter-spacing: 0.5px;">Total Lots</h6>
+                            <h3 id="statLots" class="fw-bold mb-0">0</h3>
+                        </div>
+                        <div class="bg-primary bg-opacity-10 text-primary p-3 rounded-circle d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                            <i class="bi bi-building fs-4"></i>
+                        </div>
                     </div>
                 </div>
             </div>
-            <div class="col-md-3">
-                <div class="card shadow-sm">
-                    <div class="card-body">
-                        <h5 class="text-muted">Total Slots</h5>
-                        <h3 id="statSlots" class="fw-bold">0</h3>
+            <div class="col">
+                <div class="card stat-card shadow-sm border-0 h-100" style="border-radius: 16px;">
+                    <div class="card-body p-4 d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted text-uppercase mb-1" style="font-size: 0.75rem; letter-spacing: 0.5px;">Daily Bookings</h6>
+                            <h3 id="statDaily" class="fw-bold mb-0">0</h3>
+                        </div>
+                        <div class="bg-primary bg-opacity-10 text-primary p-3 rounded-circle d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                            <i class="bi bi-calendar-day fs-4"></i>
+                        </div>
                     </div>
                 </div>
             </div>
-            <div class="col-md-3">
-                <div class="card shadow-sm">
-                    <div class="card-body">
-                        <h5 class="text-muted">Active Bookings</h5>
-                        <h3 id="statActive" class="fw-bold text-success">0</h3>
+            <div class="col">
+                <div class="card stat-card shadow-sm border-0 h-100" style="border-radius: 16px;">
+                    <div class="card-body p-4 d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted text-uppercase mb-1" style="font-size: 0.75rem; letter-spacing: 0.5px;">Total Slots</h6>
+                            <h3 id="statSlots" class="fw-bold mb-0">0</h3>
+                        </div>
+                        <div class="bg-info bg-opacity-10 text-info p-3 rounded-circle d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                            <i class="bi bi-p-square fs-4"></i>
+                        </div>
                     </div>
                 </div>
             </div>
-            <div class="col-md-3">
-                <div class="card shadow-sm">
-                    <div class="card-body">
-                        <h5 class="text-muted">Revenue</h5>
-                        <h3 class="fw-bold text-primary">₹<span id="statRev">0</span></h3>
+            <div class="col">
+                <div class="card stat-card shadow-sm border-0 h-100" style="border-radius: 16px;">
+                    <div class="card-body p-4 d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted text-uppercase mb-1" style="font-size: 0.75rem; letter-spacing: 0.5px;">Active Bookings</h6>
+                            <h3 id="statActive" class="fw-bold text-success mb-0">0</h3>
+                        </div>
+                        <div class="bg-success bg-opacity-10 text-success p-3 rounded-circle d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                            <i class="bi bi-clock-history fs-4"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="card stat-card shadow-sm border-0 h-100" style="border-radius: 16px;">
+                    <div class="card-body p-4 d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted text-uppercase mb-1" style="font-size: 0.75rem; letter-spacing: 0.5px;">Revenue</h6>
+                            <h3 class="fw-bold text-primary mb-0">₹<span id="statRev">0</span></h3>
+                        </div>
+                        <div class="bg-warning bg-opacity-10 text-warning p-3 rounded-circle d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                            <i class="bi bi-currency-rupee fs-4"></i>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -254,10 +287,11 @@
             async function loadData() {
                 try {
                     const stats = await apiFetch('/admin/stats');
-                    document.getElementById('statLots').textContent = stats.totalLots;
-                    document.getElementById('statSlots').textContent = stats.totalSlots;
-                    document.getElementById('statActive').textContent = stats.activeBookings;
-                    document.getElementById('statRev').textContent = stats.totalRevenue;
+                    document.getElementById('statLots').textContent = stats.totalLots || 0;
+                    document.getElementById('statSlots').textContent = stats.totalSlots || 0;
+                    document.getElementById('statActive').textContent = stats.activeBookings || 0;
+                    document.getElementById('statDaily').textContent = stats.dailyBookings || 0;
+                    document.getElementById('statRev').textContent = stats.totalRevenue || 0;
 
                     const cities = await apiFetch('/cities');
                     document.getElementById('citiesTableBody').innerHTML = '';
@@ -327,16 +361,20 @@
                     const tbody = document.getElementById('slotsTableBody');
                     tbody.innerHTML = '';
                     slots.forEach(slot => {
-                        let statusBtn = '';
-                        if (slot.status === 'available') {
-                            statusBtn = `<button class="btn btn-sm btn-outline-warning me-2" onclick="toggleSlotStatus('${slot._id}', 'blocked')">Block</button>`;
-                        } else if (slot.status === 'blocked') {
-                            statusBtn = `<button class="btn btn-sm btn-outline-success me-2" onclick="toggleSlotStatus('${slot._id}', 'available')">Unblock</button>`;
-                        }
-
                         let badgeClass = 'bg-success';
                         if(slot.status === 'blocked') badgeClass = 'bg-secondary';
-                        else if(slot.status === 'booked') badgeClass = 'bg-danger';
+                        else if(slot.status === 'booked') badgeClass = 'bg-warning text-dark';
+                        else if(slot.status === 'occupied') badgeClass = 'bg-danger';
+                        else if(slot.status === 'maintenance') badgeClass = 'bg-dark';
+
+                        const statuses = ['available', 'booked', 'occupied', 'blocked', 'maintenance'];
+                        let optionsHtml = statuses.map(s => 
+                            `<option value="${s}" ${slot.status === s ? 'selected' : ''}>${s.charAt(0).toUpperCase() + s.slice(1)}</option>`
+                        ).join('');
+
+                        let statusDropdown = `<select class="form-select form-select-sm d-inline-block w-auto me-2" onchange="toggleSlotStatus('${slot._id}', this.value)">
+                            ${optionsHtml}
+                        </select>`;
 
                         tbody.innerHTML += `
                             <tr data-lotid="${slot.lotId ? slot.lotId._id : ''}">
@@ -345,7 +383,7 @@
                                 <td>${slot.floor || '-'}</td>
                                 <td><span class="badge ${badgeClass}">${slot.status.toUpperCase()}</span></td>
                                 <td>
-                                    ${statusBtn}
+                                    ${statusDropdown}
                                     <button class="btn btn-sm btn-outline-danger" onclick="deleteAdminSlot('${slot._id}')"><i class="bi bi-trash"></i> Delete</button>
                                 </td>
                             </tr>

@@ -113,7 +113,7 @@
                             ? `<button class="btn btn-sm btn-primary mt-3" onclick="checkoutBooking('${b._id}')">Checkout Now</button>`
                             : '';
 
-                        const viewTicketBtn = `<a href="http://localhost:5001/booking/${b._id}" target="_blank" class="btn btn-sm btn-outline-success mt-3"><i class="bi bi-qr-code"></i> View Full Ticket</a>`;
+                        const viewTicketBtn = `<a href="ticket?id=${b._id}" class="btn btn-sm btn-outline-success mt-3"><i class="bi bi-qr-code"></i> View Ticket</a>`;
 
                         const penaltyText = b.penaltyAmount > 0
                             ? `<br><small class="text-danger fw-bold">+₹${b.penaltyAmount} Penalty (Double Rate Overstay)</small>`
@@ -121,16 +121,21 @@
 
                         const html = `
                             <div class="col">
-                                <div class="card shadow-sm h-100">
-                                    <div class="card-body d-flex flex-column">
+                                <div class="card shadow-sm h-100 border-0" style="border-radius: 16px; overflow: hidden;">
+                                    <div class="card-body d-flex flex-column p-4">
                                         <div class="d-flex justify-content-between align-items-start mb-3">
                                             <div class="flex-grow-1 pe-3">
-                                                <h5 class="card-title text-primary mb-1 fw-bold">${b.lotId.name} <small class="text-muted">(${b.lotId.location})</small></h5>
-                                                <div class="mb-3">${statusBadge}</div>
-                                                <p class="mb-1"><strong>Slot:</strong> ${b.slotId.slotNumber} (Floor: ${b.slotId.floor || '-'})</p>
-                                                <p class="mb-1"><strong>Time:</strong> ${st.toLocaleString()} <br> <strong>To:</strong> ${et.toLocaleString()}</p>
-                                                <p class="mb-1"><strong>Vehicle:</strong> ${b.vehicleNumber} <span class="badge bg-light text-dark border">${b.vehicleType.toUpperCase()}</span></p>
-                                                <p class="mb-1 fw-bold"><strong>Total Paid:</strong> ₹${b.amount} ${penaltyText}</p>
+                                                <h5 class="card-title text-primary mb-1 fw-bold"><i class="bi bi-geo-alt-fill me-1"></i>${b.lotId.name} <small class="text-muted fs-6 fw-normal">(${b.lotId.location})</small></h5>
+                                                <div class="mb-3 mt-2">${statusBadge}</div>
+                                                <div class="d-flex flex-wrap gap-2 mb-3">
+                                                    <span class="badge bg-light text-dark border p-2"><i class="bi bi-p-square-fill text-muted me-1"></i> Slot ${b.slotId.slotNumber} (Floor ${b.slotId.floor || '-'})</span>
+                                                    <span class="badge bg-light text-dark border p-2"><i class="bi bi-car-front-fill text-muted me-1"></i> ${b.vehicleNumber} <span class="text-uppercase text-secondary ms-1">(${b.vehicleType})</span></span>
+                                                </div>
+                                                <div class="bg-light p-3 rounded-3 mb-3 border">
+                                                    <div class="d-flex justify-content-between mb-1"><span class="text-muted small">In:</span> <span class="fw-bold fs-6">${st.toLocaleString()}</span></div>
+                                                    <div class="d-flex justify-content-between"><span class="text-muted small">Out:</span> <span class="fw-bold fs-6">${et.toLocaleString()}</span></div>
+                                                </div>
+                                                <p class="mb-1 fs-5 fw-bold text-success">₹${b.amount} <span class="fs-6 text-muted fw-normal">Paid</span> ${penaltyText}</p>
                                             </div>
                                             ${b.qrCodeData ? `<div class="text-center d-none d-sm-block mt-2"><img src="https://api.qrserver.com/v1/create-qr-code/?size=110x110&data=${encodeURIComponent(b.qrCodeData)}" class="border p-1 bg-white rounded shadow-sm" alt="QR Code"><div class="mt-2 text-muted small fw-bold"><i class="bi bi-qr-code-scan"></i> Show QR</div></div>` : ''}
                                         </div>
