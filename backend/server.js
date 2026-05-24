@@ -28,6 +28,9 @@ app.use('/api/cities', cityRoutes);
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+// Serve static frontend files
+app.use(express.static(path.join(__dirname, '../frontend')));
+
 // Wildcard express route satisfying the absolute assignment prompt verbatim correctly!
 app.get('/booking/:bookingId', (req, res) => {
     // Delivers the precise layout verification page physically from the backend filesystem securely 

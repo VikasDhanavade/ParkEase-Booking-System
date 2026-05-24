@@ -1,4 +1,6 @@
-const API = `http://${window.location.hostname || 'localhost'}:5001/api`;
+const API = window.location.port === '3000'
+    ? `http://${window.location.hostname || 'localhost'}:5001/api`
+    : '/api';
 
 async function apiFetch(path, options = {}) {
     const token = getToken();
