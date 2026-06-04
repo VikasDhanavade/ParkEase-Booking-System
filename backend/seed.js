@@ -2,6 +2,7 @@ import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import bcrypt from 'bcryptjs';
 import User from './models/User.js';
+import City from './models/City.js';
 import ParkingLot from './models/ParkingLot.js';
 import Slot from './models/Slot.js';
 import Booking from './models/Booking.js';
@@ -14,6 +15,7 @@ const seedDB = async () => {
         console.log('MongoDB connected for seeding');
 
         await User.deleteMany({});
+        await City.deleteMany({});
         await ParkingLot.deleteMany({});
         await Slot.deleteMany({});
         await Booking.deleteMany({});
@@ -29,12 +31,16 @@ const seedDB = async () => {
             name: "Test User", email: "user@park.com", passwordHash: userHash, role: "user"
         });
 
+        const city = await City.create({
+            name: "Pune", state: "Maharashtra"
+        });
+
         const lotA = await ParkingLot.create({
-            name: "Lot A", location: "MG Road, Pune", totalSlots: 10
+            name: "Lot A", location: "MG Road, Pune", totalSlots: 10, cityId: city._id
         });
 
         const lotB = await ParkingLot.create({
-            name: "Lot B", location: "FC Road, Pune", totalSlots: 6
+            name: "Lot B", location: "FC Road, Pune", totalSlots: 6, cityId: city._id
         });
 
         const slotsA = [];
